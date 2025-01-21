@@ -20,6 +20,6 @@ userRouter.get("/purchases", (req,res)=>{
        })
 }) 
 
-module.exports({
+module.exports = {
     userRouter: userRouter
-})
+}

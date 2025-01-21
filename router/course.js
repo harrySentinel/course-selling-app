@@ -1,6 +1,6 @@
-const Router = require("express");
+const {Router} = require("express");
 
-const courseRouter = express();
+const courseRouter = Router();
 
 courseRouter.post("/purchase", (req,res)=>{
   res.json({
@@ -14,6 +14,6 @@ courseRouter.post("/preview", (req,res)=>{
     })   
 })
 
-module.exports({
+module.exports = {
     courseRouter: courseRouter
-})
+};
