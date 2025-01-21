@@ -1,9 +1,5 @@
  const mongoose =  require("mongoose")
-
- console.log("connected to")
- mongoose.connect("");
- 
- const schema  = mongoose.Schema;
+ const Schema  = mongoose.Schema;
  const ObjectId  = mongoose.Types.ObjectId
 
  const userSchema = new Schema({
@@ -13,14 +9,14 @@
   lastname : String
  })
 
- const adminSchema = new schema({
+ const adminSchema = new Schema({
    email : {type: String, unique: true},
    password : String, 
    firstname : String, 
    lastname : String
  })
 
- const courseSchema = new schema({
+ const courseSchema = new Schema({
     title: String,
     description: String,
     price: Number,
@@ -28,7 +24,7 @@
     creatorId : ObjectId
  })
 
- const purchaseSchema = new schema({
+ const purchaseSchema = new Schema({
     courseId: ObjectId,
     userId : ObjectId
  })
