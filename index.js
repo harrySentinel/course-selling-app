@@ -1,5 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose")
+require('dotenv').config();
 const {userRouter} = require("./router/user")
 const {courseRouter} = require("./router/course");
 const { adminRouter } = require("./router/admin");
@@ -12,9 +13,22 @@ app.use("/api/v1/admin", adminRouter);
 
 
 async function main(){
-   await mongoose.connect("mongodb+srv://harry785:5nqma4KTGtdXnp3Q@cluster0.amtk9.mongodb.net/course-selling-app");
-   app.listen(3000);
-   console.log("server is listening on port 3000")
+   try{
+   const MONGO_URI = process.env.MONGO_URI;
+   const PORT = process.env.PORT || 3000;
+
+   await mongoose.connect(MONGO_URI)
+    console.log("connected to MONGODB successfully !")
+
+    // starting the server 
+    app.listen(PORT, ()=>{
+      console.log(`the server is listening on PORT ${PORT}`)
+    })
+
+   } catch(error){
+      console.error("Error Starting the application:", error.message)
+      process.exit(1);
+   }
 }
 
 main();
