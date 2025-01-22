@@ -74,11 +74,11 @@ adminRouter.post("/signin", async (req,res)=>{
             message: " the admin does not exist"
         })
     }
-    const passwordMatch = bcrypt.compare(password, response.password)
+    const passwordMatch = bcrypt.compare(password, admin.password)
 
     if(passwordMatch){
         const token  = jwt.sign({
-            id : response._id.toString()
+            id : admin._id.toString()
         }, JWT_ADMIN_SECRET);
 
         res.json({

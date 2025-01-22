@@ -76,11 +76,11 @@ userRouter.post("/signin", async (req,res)=>{
             message: " the user does not exist"
         })
     }
-    const passwordMatch = bcrypt.compare(password, response.password)
+    const passwordMatch = bcrypt.compare(password, user.password)
 
     if(passwordMatch){
         const token  = jwt.sign({
-            id : response._id.toString()
+            id : user._id.toString()
         }, JWT_SECRET);
 
         res.json({
