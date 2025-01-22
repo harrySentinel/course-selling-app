@@ -76,7 +76,7 @@ userRouter.post("/signin", async (req,res)=>{
             message: " the user does not exist"
         })
     }
-    const passwordMatch = bcrypt.compare(password, user.password)
+    const passwordMatch = await bcrypt.compare(password, user.password)
 
     if(passwordMatch){
         const token  = jwt.sign({
@@ -84,6 +84,7 @@ userRouter.post("/signin", async (req,res)=>{
         }, JWT_SECRET);
 
         res.json({
+            message : "the user is signed in",
             Token : token
         })
     }else{
@@ -91,10 +92,6 @@ userRouter.post("/signin", async (req,res)=>{
             message : "incorrect credentials"
         })
     }
-
-    res.status(200).json({
-        message: "the user signed up successfully"
-    })
 }) 
 
 userRouter.get("/purchases", (req,res)=>{

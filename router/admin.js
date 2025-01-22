@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken")
 require('dotenv').config();
 const bcrypt = require('bcrypt')
 const JWT_ADMIN_SECRET = process.env.JWT_ADMIN_SECRET;
+const {z} = require("zod")
 
 adminRouter.post("/signup", async (req,res)=>{
    // zod validation schema
@@ -74,7 +75,7 @@ adminRouter.post("/signin", async (req,res)=>{
             message: " the admin does not exist"
         })
     }
-    const passwordMatch = bcrypt.compare(password, admin.password)
+    const passwordMatch = await bcrypt.compare(password, admin.password)
 
     if(passwordMatch){
         const token  = jwt.sign({
@@ -82,6 +83,7 @@ adminRouter.post("/signin", async (req,res)=>{
         }, JWT_ADMIN_SECRET);
 
         res.json({
+            message : "the admin is signed up",
             Token : token
         })
     }else{
@@ -90,9 +92,6 @@ adminRouter.post("/signin", async (req,res)=>{
         })
     }
 
-    res.status(200).json({
-        message: "the user signed up successfully"
-    })
 })
 
 adminRouter.post("/course", (req,res)=>{
