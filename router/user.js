@@ -1,17 +1,96 @@
 const { Router } = require("express");
-
 const userRouter = Router();
+const jwt  = require("jsonwebtoken");
+const {userModel} = require("../db")
+require("dotenv").config()
+const bcrypt = require("bcrypt");
+const JWT_SECRET  = process.env.JWT_SECRET 
+const {z} = require("zod")
 
-userRouter.post("/signup", (req,res)=>{
-   res.json({
-    message: "have to edit the routes"
-   })
+userRouter.post("/signup", async (req,res)=>{
+
+   // zod validation schema
+   const signupSchema = z.object({
+    email: z.string().min(3),
+    password: z.string().min(6),
+    firstName: z.string().min(1), // firstName cannot be empty
+    lastName: z.string().min(1) // lastName cannot be empty
+   });
+
+try{
+
+    // validating request body
+   signupSchema.parse(req.body);
+
+   const {email, password, firstName,lastName} = req.body;
+
+ const exist = await userModel.findOne({
+    email
+ })
+
+ if(exist){
+    return res.status(400).json({
+        message: "user already exist in the database"
+    });
+ }
+   
+ // hashing password
+  const hashedPassword = await bcrypt.hash(password, 5);
+
+  await userModel.create({
+    email: email,
+    password: hashedPassword,
+    firstName: firstName,
+    lastName: lastName
+  });
+
+  // success message
+  res.status(201).json({
+    message : "The user signed up successfully"
+  });   
+} catch (error){
+   if(error.errors){
+    return res.status(400).json({
+        message : "Invalid input",
+        errors: error.errors.map((err) => err.message), // extracting readable error
+    });
+   }
+
+   //handling any unexpected errors
+   res.status(500).json({
+    message : "An occured during signup"
+   });
+    }
 }) 
 
-userRouter.post("/signin", (req,res)=>{
-    res.json({
-        message: "have to edit the routes"
-       })
+userRouter.post("/signin", async (req,res)=>{
+    const email = req.body.email
+    const password  = req.body.password
+
+    const response = await userModel.findOne({
+        email: email
+    });
+
+    if(!response){
+        return res.status(403).json({
+            message: " the user does not exist"
+        })
+    }
+    const passwordMatch = bcrypt.compare(password, response.password)
+
+    if(passwordMatch){
+        const token  = jwt.sign({
+            id : response._id.toString()
+        }, JWT_SECRET)
+    }else{
+       return res.status(403).json({
+            message : "incorrect credentials"
+        })
+    }
+
+    res.status(200).json({
+        message: "the user signed up successfully"
+    })
 }) 
 
 userRouter.get("/purchases", (req,res)=>{
