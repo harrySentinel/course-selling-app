@@ -4,65 +4,95 @@ const adminRouter = Router();
 const jwt = require("jsonwebtoken")
 require('dotenv').config();
 const bcrypt = require('bcrypt')
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_ADMIN_SECRET = process.env.JWT_ADMIN_SECRET;
 
 adminRouter.post("/signup", async (req,res)=>{
-const email = req.body.email;
-const password = req.body.password;
-const firstName = req.body.firstName;
-const lastName =  req.body.lastName;
+   // zod validation schema
+   const signupSchema = z.object({
+    email: z.string().min(3),
+    password: z.string().min(6),
+    firstName: z.string().min(1), // firstName cannot be empty
+    lastName: z.string().min(1) // lastName cannot be empty
+   });
 
-let errorThrown = false;
 try{
- const hashedPassword = await bcrypt.hash(password, 5)
- 
- await adminModel.create({
-    email : email, 
-    password: hashedPassword,
-    firstName: firstName,
-    lastName : lastName
+
+    // validating request body
+   signupSchema.parse(req.body);
+
+   const {email, password, firstName,lastName} = req.body;
+
+ const admin = await adminModel.findOne({
+    email
  })
 
-}catch(error){
-res.json({
-    message : "user already exists"
-})
- errorThrown = true;
-}
+ if(admin){
+    return res.status(400).json({
+        message: "user already exist in the database"
+    });
+ }
+   
+ // hashing password
+  const hashedPassword = await bcrypt.hash(password, 5);
 
-if(!errorThrown){
-    res.json({
-        message : "you are signed up"
-    })
-}
+  await adminModel.create({
+    email: email,
+    password: hashedPassword,
+    firstName: firstName,
+    lastName: lastName
+  });
+
+  // success message
+  res.status(201).json({
+    message : "The admin signed up successfully"
+  });   
+} catch (error){
+   if(error.errors){
+    return res.status(400).json({
+        message : "Invalid input",
+        errors: error.errors.map((err) => err.message), // extracting readable error
+    });
+   }
+
+   //handling any unexpected errors
+   res.status(500).json({
+    message : "An occured during signup"
+   });
+    }
 })
 
 adminRouter.post("/signin", async (req,res)=>{
- const email = req.body.email;
- const password = req.body.password;
- 
- const response = await adminModel.findOne({
-    email: email
- })
- console.log(response)
+    const email = req.body.email
+    const password  = req.body.password
 
- if(!response){
-    return res.status(403).json({
-        message: "user does not exists in our database"
-    })
- }
+    const admin = await adminModel.findOne({
+        email: email
+    });
+
+    if(!admin){
+        return res.status(403).json({
+            message: " the admin does not exist"
+        })
+    }
     const passwordMatch = bcrypt.compare(password, response.password)
 
     if(passwordMatch){
-        const token = jwt.sign({
-            id: response._id.toString() // because reponse._id is a ObjectId 
-        },JWT_SECRET)
-    }else {
-        res.status(403).json({
-            message: "incorrect credentials"
+        const token  = jwt.sign({
+            id : response._id.toString()
+        }, JWT_ADMIN_SECRET);
+
+        res.json({
+            Token : token
+        })
+    }else{
+       return res.status(403).json({
+            message : "incorrect credentials"
         })
     }
- 
+
+    res.status(200).json({
+        message: "the user signed up successfully"
+    })
 })
 
 adminRouter.post("/course", (req,res)=>{

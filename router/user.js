@@ -24,11 +24,11 @@ try{
 
    const {email, password, firstName,lastName} = req.body;
 
- const exist = await userModel.findOne({
+ const user = await userModel.findOne({
     email
  })
 
- if(exist){
+ if(user){
     return res.status(400).json({
         message: "user already exist in the database"
     });
@@ -67,11 +67,11 @@ userRouter.post("/signin", async (req,res)=>{
     const email = req.body.email
     const password  = req.body.password
 
-    const response = await userModel.findOne({
+    const user = await userModel.findOne({
         email: email
     });
 
-    if(!response){
+    if(!user){
         return res.status(403).json({
             message: " the user does not exist"
         })
@@ -81,7 +81,11 @@ userRouter.post("/signin", async (req,res)=>{
     if(passwordMatch){
         const token  = jwt.sign({
             id : response._id.toString()
-        }, JWT_SECRET)
+        }, JWT_SECRET);
+
+        res.json({
+            Token : token
+        })
     }else{
        return res.status(403).json({
             message : "incorrect credentials"
