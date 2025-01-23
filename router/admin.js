@@ -113,10 +113,23 @@ adminRouter.post("/course", adminMiddleware, async (req,res) => {
         courseId: course._id
     })
 })
+
+
 adminRouter.put("/course", adminMiddleware, async (req,res)=>{
     const adminId = req.userId
 
     const {title, description,imageUrl, price, courseId} =  req.body
+
+    const existingUser = await courseModel.findOne({
+        _id : courseId,
+        creatorId : adminId
+    })
+
+    if(!existingUser){
+        return res.status(403).json({
+            message : "this course is not yours and u cannot update it"
+        })
+    }
 
     const course = await courseModel.updateOne({
         _id: courseId,
