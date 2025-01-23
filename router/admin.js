@@ -113,15 +113,37 @@ adminRouter.post("/course", adminMiddleware, async (req,res) => {
         courseId: course._id
     })
 })
-adminRouter.put("/course", (req,res)=>{
+adminRouter.put("/course", adminMiddleware, async (req,res)=>{
+    const adminId = req.userId
+
+    const {title, description,imageUrl, price, courseId} =  req.body
+
+    const course = await courseModel.updateOne({
+        _id: courseId,
+        creatorId: adminId        
+    },{
+        title: title,
+        description: description,
+        imageUrl: imageUrl,
+        price: price
+    })
+
     res.json({
-        message: "course put endpoint"
+        message: "Course Updated successfully",
+        courseId : course._id
     })
 })
 
-adminRouter.get("/course/bulk", (req,res)=>{
+adminRouter.get("/course/bulk", async (req,res)=>{
+    const adminId = req.userId;
+
+    const courses = await courseModel.find({
+        creatorId: adminId
+    });
+
     res.json({
-        message: "retreiving course endpoint"
+        message: "listing all your courses...",
+        courses
     })
 })
 
