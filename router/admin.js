@@ -1,11 +1,12 @@
 const {Router} = require("express");
-const {adminModel} = require("../db")
+const {adminModel, courseModel} = require("../db")
 const adminRouter = Router();
 const jwt = require("jsonwebtoken")
 require('dotenv').config();
 const bcrypt = require('bcrypt')
-const JWT_ADMIN_SECRET = process.env.JWT_ADMIN_SECRET;
+const {JWT_ADMIN_SECRET} = require("../config")
 const {z} = require("zod")
+const {adminMiddleware} = require("../middleware/admin")
 
 adminRouter.post("/signup", async (req,res)=>{
    // zod validation schema
@@ -94,9 +95,22 @@ adminRouter.post("/signin", async (req,res)=>{
 
 })
 
-adminRouter.post("/course", (req,res)=>{
+adminRouter.post("/course", adminMiddleware, async (req,res)=>{
+    const adminId = req.userId;
+
+    const {title, description, price, imageUrl} = req.body;
+
+    const course = await courseModel.create({
+        title: title,
+        description: description,
+        price: price, 
+        imageUrl: imageUrl,
+        creatorId: adminId
+    })
+
     res.json({
-        message: "course endpoint"
+        message : "course created successfully !!",
+        courseId: course._id
     })
 })
 
