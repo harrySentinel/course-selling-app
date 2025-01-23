@@ -95,7 +95,7 @@ adminRouter.post("/signin", async (req,res)=>{
 
 })
 
-adminRouter.post("/course", adminMiddleware, async (req,res)=>{
+adminRouter.post("/course", adminMiddleware, async (req,res) => {
     const adminId = req.userId;
 
     const {title, description, price, imageUrl} = req.body;
@@ -113,7 +113,6 @@ adminRouter.post("/course", adminMiddleware, async (req,res)=>{
         courseId: course._id
     })
 })
-
 adminRouter.put("/course", (req,res)=>{
     res.json({
         message: "course put endpoint"
