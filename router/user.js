@@ -1,11 +1,12 @@
 const { Router } = require("express");
 const userRouter = Router();
 const jwt  = require("jsonwebtoken");
-const {userModel} = require("../db")
+const {userModel, purchaseModel, courseModel} = require("../db")
 require("dotenv").config()
 const bcrypt = require("bcrypt");
 const {JWT_USER_SECRET} = require("../config")
-const {z} = require("zod")
+const {z} = require("zod");
+const { userMiddleware } = require("../middleware/user");
 
 userRouter.post("/signup", async (req,res)=>{
 
@@ -94,10 +95,27 @@ userRouter.post("/signin", async (req,res)=>{
     }
 }) 
 
-userRouter.get("/purchases", (req,res)=>{
+userRouter.get("/purchases",userMiddleware, async (req,res)=>{
+    
+    const userId = req.userId;
+
+    const purchases = await purchaseModel.find({
+        userId,
+    });
+
+    let purchasedCourseIds = [];
+
+    for(let i=0; i<purchases.length; i++){
+        purchasedCourseIds.push(purchases[i].courseId)
+    }
+    const coursesData = await courseModel.find({
+        _id: { $in: purchasedCourseIds}
+    })
+
     res.json({
-        message: "have to edit the routes"
-       })
+        purchases,
+        coursesData
+    })
 }) 
 
 module.exports = {
