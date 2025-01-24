@@ -120,17 +120,6 @@ adminRouter.put("/course", adminMiddleware, async (req,res)=>{
 
     const {title, description,imageUrl, price, courseId} =  req.body
 
-    const existingUser = await courseModel.findOne({
-        _id : courseId,
-        creatorId : adminId
-    })
-
-    if(!existingUser){
-        return res.status(403).json({
-            message : "this course is not yours and u cannot update it"
-        })
-    }
-
     const course = await courseModel.updateOne({
         _id: courseId,
         creatorId: adminId        
@@ -140,6 +129,12 @@ adminRouter.put("/course", adminMiddleware, async (req,res)=>{
         imageUrl: imageUrl,
         price: price
     })
+
+    if(course.matchedCount === 0){
+        return res.status(403).json({
+            message : "this is not your course, or it does not exists"
+        })
+    }
 
     res.json({
         message: "Course Updated successfully",
